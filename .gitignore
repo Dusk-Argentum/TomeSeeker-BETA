@@ -99,3 +99,4 @@ ENV/
 .mypy_cache/
 
 /.idea/
+/hawthorne-items.iml
