@@ -11,6 +11,7 @@ PREFIX = "!"
 DESCRIPTION = "A proof-of-concept bot to look up homebrew items from a internet source."
 TOKEN = os.environ.get("TOKEN")
 UPDATE_DELAY = 60 * 30  # update every 30 minutes
+
 ITEM_SOURCE = "https://raw.githubusercontent.com/tabletoptools/Hawthorne-Docs/develop/hawthorne/homebrew.md"
 ITEM_DIVIDER = "***"  # a string that divides distinct items.
 IGNORED_ENTRIES = 1  # a number of entries to ignore (in case of an index, etc)
