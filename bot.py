@@ -1,3 +1,6 @@
+"""
+Written by @zhu.exe#4211 (187421759484592128).
+"""
 import asyncio
 import os
 
