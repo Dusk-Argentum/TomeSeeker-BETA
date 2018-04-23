@@ -1,2 +1,17 @@
-###  Sources
+***
 
+### Sources
+https://raw.githubusercontent.com/Dusk-Argentum/TomeSeeker/master/Misadventures%20in%20Lyyth/classes.txt
+https://raw.githubusercontent.com/Dusk-Argentum/TomeSeeker/master/Misadventures%20in%20Lyyth/feats.txt
+https://raw.githubusercontent.com/Dusk-Argentum/TomeSeeker/master/Misadventures%20in%20Lyyth/items.txt
+https://raw.githubusercontent.com/Dusk-Argentum/TomeSeeker/master/Misadventures%20in%20Lyyth/monsters.txt
+https://raw.githubusercontent.com/Dusk-Argentum/TomeSeeker/master/Misadventures%20in%20Lyyth/races.txt
+https://raw.githubusercontent.com/Dusk-Argentum/TomeSeeker/master/Misadventures%20in%20Lyyth/spells.txt
+https://raw.githubusercontent.com/Dusk-Argentum/TomeSeeker/master/Planar%20Recovery%20and%20Improvement%20Mission%20Agency/classes.txt
+https://raw.githubusercontent.com/Dusk-Argentum/TomeSeeker/master/Planar%20Recovery%20and%20Improvement%20Mission%20Agency/feats.txt
+https://raw.githubusercontent.com/Dusk-Argentum/TomeSeeker/master/Planar%20Recovery%20and%20Improvement%20Mission%20Agency/items.txt
+https://raw.githubusercontent.com/Dusk-Argentum/TomeSeeker/master/Planar%20Recovery%20and%20Improvement%20Mission%20Agency/monsters.txt
+https://raw.githubusercontent.com/Dusk-Argentum/TomeSeeker/master/Planar%20Recovery%20and%20Improvement%20Mission%20Agency/races.txt
+https://raw.githubusercontent.com/Dusk-Argentum/TomeSeeker/master/Planar%20Recovery%20and%20Improvement%20Mission%20Agency/spells.txt
+
+***
