@@ -12,10 +12,12 @@ from funcs import *
 
 OWNER_ID = "97153790897045504"
 
-PREFIX = "." # This is the prefix you call commands with in Discord. For example: ".help" will call the the "Help" command, but only if your prefix is ".".
+PREFIX = "," # This is the prefix you call commands with in Discord. For example: ".help" will call the the "Help" command, but only if your prefix is ".".
 DESCRIPTION = "A bot to look up homebrew info from a internet source. Written by zhu.exe#4211, modified by Dusk-Argentum#6530 and silverbass#2407." # Keep this the same.
 TOKEN = os.environ["TOKEN"]
 UPDATE_DELAY = 600  # Delay is measured in seconds. "120" is 2 minutes, "360" is 6 minutes, "600" is 10 minutes, etc.
+
+discordping = 1
 
 # This is where your sources go.
 EXAMPLE_CLASS_SOURCE = "" # Put your source URL between the quotes. Remember to use the RAW version if you're using GitHub.
@@ -24,6 +26,9 @@ EXAMPLE_ITEM_SOURCE = ""
 EXAMPLE_MONSTER_SOURCE = ""
 EXAMPLE_RACE_SOURCE = ""
 EXAMPLE_SPELL_SOURCE = "" # Don't worry if you don't use them all; you can leave any one blank as long as you don't call it later.
+
+# Source
+SOURCE = "https://raw.githubusercontent.com/Dusk-Argentum/TomeSeeker-BETA/master/Sources.txt"
 
 # Misadventures In Lyyth Sources
 MIL_CLASS_SOURCE = "https://raw.githubusercontent.com/Dusk-Argentum/TomeSeeker/master/Misadventures%20in%20Lyyth/classes.txt"
@@ -50,6 +55,8 @@ bot = commands.Bot(command_prefix=commands.when_mentioned_or(PREFIX), descriptio
 client = discord.Client() # Leave this alone.
 
 # If you ever decide to add more sources for different things, be sure to declare them here or else your bot will error out.
+# Source
+#sources = []
 # MIL
 mil_classes = []
 mil_feats = []
@@ -248,6 +255,8 @@ async def on_ready(): # What happens in this block happens upon startup. Be sure
 				prima_spells.append({"name": name, "meta": meta, "desc": desc})
 				print(f"Indexed spell {name} from PRIMA.")
 	await bot.change_presence(game=discord.Game(name="D&D 5e | .help"), status=discord.Status("online")) # This line sets the bot's presence upon startup. Change the prefix to match the one above, or change the whole message entirely. It's up to you.
+	bot.loop.create_task(update_sources_loop())
+	await bot.change_presence(game=discord.Game(name="D&D 5e | ,help"), status=discord.Status("online")) # This line sets the bot's presence upon startup. Change the prefix to match the one above, or change the whole message entirely. It's up to you.
 	bot.loop.create_task(update_sources_loop())
 
 @bot.event # This sends errors when necessary.
@@ -460,20 +469,19 @@ async def update_sources(): # This is required to update your sources at a regul
 				for dup in [i for i in prima_spells if name.lower() == i["name"].lower()]:
 					prima_spells.remove(dup)
 				prima_spells.append({"name": name, "meta": meta, "desc": desc})
+				print("Test!")
 				print(f"Indexed spell {name} from PRIMA.")
-			print("Update source loop complete!")
+				#print("Test!")
+				channels = bot.get_all_channels()
+				print("Sources updated and Discord pinged!")
 			
-def owner_only(func):
-	@wraps(func)
-	async def wrapper(self, *args, **kwargs):
-		# Only allow the owner to use these commands
-		orig_msg = _get_variable('message')
-		if not orig_msg or orig_msg.author.id == "97153790897045504":
-			# noinspection PyCallingNonCallable
-			return await func(self, *args, **kwargs)
-		else:
-			raise exceptions.PermissionsError("Only the owner can use this command.", expire_in=30)
-	return wrapper
+@bot.event
+async def dis():
+	discordping == 1
+	while (discordping == 0):
+		channels = bot.get_all_channels()
+		print(f"I just pinged Discord so I don't die!")
+		asyncio.sleep(50)
 		
 #@bot.command(pass_context=True) # This is the classes command. Be sure to change it to fit your needs.
 async def _class(ctx, *, name='class', aliases=['class']):
@@ -520,8 +528,9 @@ async def ass(ctx, *, name=''):
 	embed = EmbedWithAuthor(ctx)
 	embed.title = result['name']
 	meta = result['meta']
-	meta2 = [meta[i:i + 1024] for i in range(2048, len(meta), 1024)]
+	lines = meta.split("/n")
 	embed.description = meta[0:2048]
+	meta2 = [meta[i:i + 1024] for i in range(2048, len(meta), 1024)]
 	for piece in meta2:
 		embed.add_field(name="\u200b", value=piece)
 	await bot.say(embed=embed)
@@ -546,7 +555,6 @@ async def feat(ctx, *, name=""):
 	embed = EmbedWithAuthor(ctx)
 	embed.title = result["name"]
 	meta = result["meta"]
-	meta2 = [meta[i:i + 1024] for i in range(1024, len(meta), 1024)]
 	if "*Prerequisite: " in meta:
 		prereq = meta[len("*Prerequisite: ")+meta.find("*Prerequisite: "):meta.find("*\n")]
 		meta = meta[(meta.find("*\n")+2)::]
@@ -557,6 +565,7 @@ async def feat(ctx, *, name=""):
 		meta = meta[(meta.find("up to a maximum of 20.\n")+len("up to a maximum of 20.\n"))::]
 		embed.add_field(name="Ability Improvement", value=hasi)
 	embed.add_field(name="Description", value=meta[0:1024])
+	meta2 = [meta[i:i + 1024] for i in range(1024, len(meta), 1024)]
 	for piece in meta2:
 		embed.add_field(name="\u200b", value=piece)
 	await bot.say(embed=embed)
@@ -583,6 +592,65 @@ async def ft(ctx, *, name=""):
 	meta = result["meta"]
 	meta2 = [meta[i:i + 1024] for i in range(2048, len(meta), 1024)]
 	embed.description = meta[0:2048]
+	for piece in meta2:
+		embed.add_field(name="\u200b", value=piece)
+	await bot.say(embed=embed)
+	await bot.delete_message(ctx.message)
+	
+@bot.group(pass_context=True)
+async def item2(ctx):
+	if ctx.invoked_subcommand is None:
+		await bot.say("Testerino!")
+@item2.command(pass_context=True)
+async def mil(ctx, *, name=""):
+	result = search(mil_items, "name", name)
+	if result is None:
+		return await bot.say("MIL Item not found.")
+	strict = result[1]
+	results = result[0]
+	if strict:
+		result = results
+	else:
+		if len(results) == 1:
+			result = results[0]
+		else:
+			result = await get_selection(ctx, [(r["name"], r) for r in results])
+			if result is None: return await bot.say("Selection timed out or was cancelled.")
+	embed = EmbedWithAuthor(ctx)
+	embed.title = result["name"]
+	meta = result["meta"]
+	meta2 = [meta[i:i + 1024] for i in range(2048, len(meta), 1024)]
+	lines = meta.split("\n")
+	embed.description = lines[0]
+	embed.add_field(name="Description", value=lines[1])
+	embed.set_thumbnail(url=lines[2])
+	for piece in meta2:
+		embed.add_field(name="\u200b", value=piece)
+	await bot.say(embed=embed)
+	await bot.delete_message(ctx.message)
+@item2.command(pass_context=True)
+async def prima(ctx, *, name=""):
+	result = search(prima_items, "name", name)
+	if result is None:
+		return await bot.say("PRIMA Item not found.")
+	strict = result[1]
+	results = result[0]
+	if strict:
+		result = results
+	else:
+		if len(results) == 1:
+			result = results[0]
+		else:
+			result = await get_selection(ctx, [(r["name"], r) for r in results])
+			if result is None: return await bot.say("Selection timed out or was cancelled.")
+	embed = EmbedWithAuthor(ctx)
+	embed.title = result["name"]
+	meta = result["meta"]
+	meta2 = [meta[i:i + 1024] for i in range(2048, len(meta), 1024)]
+	lines = meta.split("\n")
+	embed.description = lines[0]
+	embed.add_field(name="Description", value=lines[1])
+	embed.set_thumbnail(url=lines[2])
 	for piece in meta2:
 		embed.add_field(name="\u200b", value=piece)
 	await bot.say(embed=embed)
@@ -620,7 +688,15 @@ async def item(ctx, *, name=""):
 @bot.command(pass_context=True) # This is an additional items command. Ignore this if you're only using the bot on one server, or for one campaign.
 async def itm(ctx, *, name=""):
 	"""Looks up a homebrew monster in the MIL index."""
-	result = search(prima_items, "name", name)
+	async with aiohttp.ClientSession() as session:
+		async with session.get(SOURCE) as resp:
+			text = await resp.text()
+			if 399 < resp.status < 600:
+				raise Exception(f"Failed to update sources: {text}")
+			raw_sources = [t.strip() for t in text.split(DIVIDER)][IGNORED_ENTRIES:]
+	meta = raw_sources["meta"]
+	lines = meta.split("\n")
+	result = search(lines[8], "name", name)
 	if result is None:
 		return await bot.say("PRIMA Item not found.")
 	strict = result[1]
@@ -635,13 +711,13 @@ async def itm(ctx, *, name=""):
 			if result is None: return await bot.say("Selection timed out or was cancelled.")
 	embed = EmbedWithAuthor(ctx)
 	embed.title = result["name"]
-	meta = result["meta"]
-	meta2 = [meta[i:i + 1024] for i in range(2048, len(meta), 1024)]
-	lines = meta.split("\n")
-	embed.description = lines[0]
-	embed.add_field(name="Description", value=lines[1])
-	embed.set_thumbnail(url=lines[2])
-	for piece in meta2:
+	meta2 = result["meta2"]
+	meta3 = [meta2[i:i + 1024] for i in range(2048, len(meta2), 1024)]
+	lines2 = meta2.split("\n")
+	embed.description = lines2[0]
+	embed.add_field(name="Description", value=lines2[1])
+	embed.set_thumbnail(url=lines2[2])
+	for piece in meta3:
 		embed.add_field(name="\u200b", value=piece)
 	await bot.say(embed=embed)
 	await bot.delete_message(ctx.message)
@@ -1044,38 +1120,42 @@ async def echo(*, message: str):
 	await bot.say(message)
 	
 @bot.command(pass_context=True)
-async def fuck(ctx, message: str):
+async def pebsi(ctx, message: str):
 	await bot.say(message)
-	await bot.delete_message(ctx.message)
-		
-@bot.command(pass_context=True)
-async def sec(ctx, *, name=""):
-	await bot.say("Started.")
-	await asyncio.sleep(5)
-	await bot.say("It has been five seconds.")
-	await asyncio.sleep(5)
-	await bot.say("It has been ten seconds.")
-	await asyncio.sleep(10)
-	await bot.say("It has been twenty seconds.")
-	await asyncio.sleep(10)
-	await bot.say("It has been thirty seconds.")
-	await bot.say("Limit. Thank you for using the `sec` command.")
 	await bot.delete_message(ctx.message)
 	
 @bot.command(pass_context=True)
-async def next(ctx, *, name=""):
-	embed=discord.Embed(title="You arrive in Arcanus...", color=0x00004c)
-	embed.set_thumbnail(url="https://i.imgur.com/9824Tex.png")
-	embed.add_field(name="Your arrival in Arcanus has been foretold!", value="The psychics in Arcanus have prophesied your arrival for minutes!", inline=False)
-	embed.add_field(name="Something is amiss...", value="Stepping through the gates of Arcanus, you can feel a sort of tension in the air. Unsure of what it is, you decide to investigate. Where will your investigations lead?", inline=True)
-	embed.set_footer(text="The second session of the PRIMA campaign will take place on Thursday, April 26, 2018, at 5:30 PM EST!")
+async def remind(ctx, message: str, input: int):
+	if input is None:
+		await bot.say("You forgot to input a time.")
+	else:
+		await bot.say("Reminder set!")
+		await bot.delete_message(ctx.message)
+		await asyncio.sleep(input)
+		await bot.say(ctx.message.author.mention+": "+message)
+		
+@bot.command(pass_context=True)
+async def remind2(ctx, message: str, input: int):
+	if input is "":
+		await bot.say("You forgot to input a time.")
+	else:
+		await bot.say("Reminder set!")
+		await bot.delete_message(ctx.message)
+		await asyncio.sleep(input)
+		await bot.say(ctx.message.author.mention+" says: "+'"'+message+'"')
+		
+@bot.command(pass_context=True)
+async def test(ctx):
+	await bot.say("Hewwo!")
+	await bot.say(ctx.message.author.mention)
+		
+@bot.command(pass_context=True)
+async def herbs(ctx, *, name=""):
+	embed = EmbedWithAuthor(ctx)
+	embed.title = "Was it really worth it?"
+	embed.add_field(name="Characters lost to herbs:", value="Avaris \n\
+~~Bone~~ Not fucking quite, don't do that again")
 	await bot.say(embed=embed)
-
-#@bot.command(pass_context=True)
-#async def zomeone(ctx, *, name=""):
-	#x = message.server.members
-	#for member in x:
-		#await bot.say(member.name) # you'll just print out Member objects your way.
 
 @bot.command(pass_context=True)
 async def help(ctx, *, name=""):
@@ -1113,22 +1193,63 @@ Echoes what you type after `.echo` back to you. Does not delete calling command.
 	embed.set_footer(text="Lovingly (at times) crafted by Dusk-Argentum#6530.")
 	await bot.say(embed=embed)
 	await bot.delete_message(ctx.message)
+
+@bot.command(pass_context=True)
+async def bruno(ctx, *, name=""):
+    embed=discord.Embed()
+    embed.title = "The Rumor Come Out: Does Bruno Mars Is Gay?"
+    embed.description = "**Bruno Mars is gay** is the most discussed in the media in the few years ago. Even it has happened in 2012, but some of the public still curious about what is exactly happening and to be the reason there is a rumor comes out about his gay. At that time he became the massive social networking rumor. The public, especially his fans are shocked. He just came out with his bad rumor which is spread massively. This time is not about his music career, but his bad rumor. The rumor is out of standardize of hoax, according the last reported this singer revealed himself as homosexual. Do you still believe or not, this rumor is really much talked by people even in a person of his fans."
+    embed.set_thumbnail(url="https://i.ytimg.com/vi/LjhCEhWiKXk/maxresdefault.jpg")
+    await bot.say(embed=embed)
 	
 @bot.command(pass_context=True)
-async def primaintro(ctx, *, name=""):
-	embed=discord.Embed(title="The three of you, while out travelling, recieve a letter from a courier...", color=0x00004c)
-	embed.set_thumbnail(url="https://images-ext-2.discordapp.net/external/GDzwqMhOw1dGHrnKP5xP7iB7ob44C2j1DoJNC-TOn3c/https/cdn0.iconfinder.com/data/icons/fantasy/512/Fantasy_Scroll.png?width=120&height=120")
-	embed.add_field(name="Greetings to you.", value="We have a new mission for you. You are to report to HERO HQ by this Friday, April 13th, at 5 PM, where you will be given further instructions. If you choose to accept it, the reward for this mission is **1000** Gold. We look forward to seeing you.", inline=True)
-	embed.add_field(name="Signed,", value="Hero Manager, \
-Rudolphus Abelthorn", inline=True)
-	embed.set_footer(text="The first session of the PRIMA campaign will take place on Friday, April 13, 2018, at 5 PM EST!")
+async def third(ctx, *, name=""):
+	embed=discord.Embed(title="You can barely see in this cold, dark place...", color=0x00004c)
+	embed.set_thumbnail(url="https://images-ext-1.discordapp.net/external/bWmeBZYnM2RR4j70B1Wr1fWMaE2nBALvf1h_iYZCMjs/https/i.imgur.com/9824Tex.png")
+	embed.add_field(name="A shiver runs down your spine.", value="You can feel something dark and evil somewhere in this dungeon. But where?", inline=False)
+	embed.add_field(name="You can hear the quiet peeping of your new feathered friend.", value="Who is she? Where did she come from? Why can she only speak words that you have said?", inline=True)
+	embed.add_field(name="All of these questions and more...", value="Answered (maybe) in the next session of the PRIMA campaign!", inline=True)
+	embed.set_footer(text="The third session of the PRIMA campaign will take place on Friday, May 11, 2018, at 5:30 PM EST!")
 	await bot.say(embed=embed)
 	await bot.delete_message(ctx.message)
+	
+@bot.command
+async def testy():
+	print("Test!")
 
 @bot.event
 async def on_message(message):
 	if message.content.startswith("/shur"):
 		await bot.send_message(message.channel, "My dumbfuck programmer (or whoever called this by accident) meant to do the shrug emoji. You know the one. Fucking... ¯\_(ツ)_/¯")
+	if message.content.startswith("Reminder set!"):
+		await asyncio.sleep(15)
+		await bot.delete_message(message)
+	if message.content.startswith(".remind"):
+		await asyncio.sleep(10)
+		await bot.delete_message(message)
+	#if message.content.startswith("Hey, TomeSeeker, anything I'm forgetting?"):
+		#embed=discord.Embed()
+		#embed.title = "Fictus' Notepad"
+		#embed.add_field(name="Remember!", value="While in Blackscale Keep, until otherwise noted or canonized, be sure to subtract your AC by 2 at the beginning of a battle!")
+		#embed.set_footer(text="Also remember you can modify this at any time.")
+		#await bot.say(embed=embed)
+	if message.content.startswith("A"):
+		print("Pinged Discord.")
 	await bot.process_commands(message)
 	
+@bot.command()
+async def d(destination = 404589172880441351):
+	#discordping = 1
+	#while (discordping == 0):
+	await bot.send_message(Channel(destination), "I just pinged Discord so I wouldn't die!")
+	#asyncio.sleep(1800)
+	
+@bot.event
+async def dis():
+	discordping == 1
+	while (discordping == 0):
+		channels = bot.get_all_channels()
+		print(f"I just pinged Discord so I don't die!")
+		asyncio.sleep(50)
+		
 bot.run(TOKEN)
